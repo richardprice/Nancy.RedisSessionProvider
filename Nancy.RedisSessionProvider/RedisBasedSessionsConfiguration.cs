@@ -10,6 +10,7 @@
         internal const string DefaultCookieName = "_ncr";
         internal const string DefaultConnectionString = "localhost:6379";
         internal const int DefaultSessionDuration = 2592000; // 30 days
+        internal const bool DefaultEnableSlidingSessions = true;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedisBasedSessionsConfiguration"/> class.
@@ -28,6 +29,7 @@
             CookieName = DefaultCookieName;
             ConnectionString = DefaultConnectionString;
             SessionDuration = DefaultSessionDuration;
+            EnableSlidingSessions = DefaultEnableSlidingSessions;
         }
 
         /// <summary>
@@ -64,6 +66,11 @@
         /// Gets or sets the duration that the session is valid for from the current action
         /// </summary>
         public int SessionDuration { get; set; }
+
+        /// <summary>
+        /// Enables extending the session duration per access
+        /// </summary>
+        public bool EnableSlidingSessions { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the configuration is valid or not.

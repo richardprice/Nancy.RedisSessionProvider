@@ -47,7 +47,7 @@ namespace Nancy.Session
                 CryptographyConfiguration = new CryptographyConfiguration(encryptionProvider, hmacProvider)
             };
 
-            if(_redis == null)
+            if (_redis == null)
                 _redis = ConnectionMultiplexer.Connect(_currentConfiguration.ConnectionString);
 
             _db = _redis.GetDatabase();
@@ -152,12 +152,14 @@ namespace Nancy.Session
 
             if (session["__SessionId"] is Guid)
             {
-                sessionId = (Guid) session["__SessionId"];
+                sessionId = (Guid)session["__SessionId"];
             }
             else
             {
                 sessionId = Guid.NewGuid();
                 session["__SessionId"] = sessionId;
+                if (_currentConfiguration.SessionDuration != 0)
+                    session["__SessionExpiration"] = DateTime.Now.AddSeconds(_currentConfiguration.SessionDuration);
             }
 
             var sb = new StringBuilder();
@@ -192,8 +194,11 @@ namespace Nancy.Session
                 Path = _currentConfiguration.Path
             };
 
-            if (_currentConfiguration.SessionDuration != 0)
-                cookie.Expires = DateTime.Now.AddSeconds(_currentConfiguration.SessionDuration);
+            if (_currentConfiguration.EnableSlidingSessions)
+                session["__SessionExpiration"] = DateTime.Now.AddSeconds(_currentConfiguration.SessionDuration);
+
+            if (session["__SessionExpiration"] is DateTime)
+                cookie.Expires = (DateTime)session["__SessionExpiration"];
 
             response.WithCookie(cookie);
         }
@@ -226,20 +231,24 @@ namespace Nancy.Session
 
                 // Get the value from Redis
                 string encryptedData = _db.StringGet(sessionId.ToString(CultureInfo.InvariantCulture));
-                var data = encryptionProvider.Decrypt(encryptedData);
 
-                var parts = data.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                
-                foreach (var part in parts.Select(part => part.Split('=')))
+                if (encryptedData != null)
                 {
-                    var valueObject = _currentConfiguration.Serializer.Deserialize(HttpUtility.UrlDecode(part[1]));
+                    var data = encryptionProvider.Decrypt(encryptedData);
 
-                    dictionary[HttpUtility.UrlDecode(part[0])] = valueObject;
-                }
+                    var parts = data.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries);
 
-                if (!hmacValid)
-                {
-                    dictionary.Clear();
+                    foreach (var part in parts.Select(part => part.Split('=')))
+                    {
+                        var valueObject = _currentConfiguration.Serializer.Deserialize(HttpUtility.UrlDecode(part[1]));
+
+                        dictionary[HttpUtility.UrlDecode(part[0])] = valueObject;
+                    }
+
+                    if (!hmacValid)
+                    {
+                        dictionary.Clear();
+                    }
                 }
             }
 
