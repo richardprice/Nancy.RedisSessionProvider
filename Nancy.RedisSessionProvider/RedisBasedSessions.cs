@@ -193,7 +193,7 @@ namespace Nancy.Session
             };
 
             if (_currentConfiguration.SessionDuration != 0)
-                cookie.Expires = DateTime.Now.AddSeconds(-_currentConfiguration.SessionDuration);
+                cookie.Expires = DateTime.Now.AddSeconds(_currentConfiguration.SessionDuration);
 
             response.WithCookie(cookie);
         }
