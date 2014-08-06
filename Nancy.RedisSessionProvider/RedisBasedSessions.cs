@@ -179,10 +179,10 @@ namespace Nancy.Session
             var redisData = cryptographyConfiguration.EncryptionProvider.Encrypt(sb.ToString());
 
             // Store the value in Redis
-            _db.StringSet(sessionId.ToString(), redisData);
+            _db.StringSet(_currentConfiguration.Prefix + sessionId.ToString(), redisData);
 
             if (_currentConfiguration.SessionDuration != 0)
-                _db.KeyExpire(sessionId.ToString(), TimeSpan.FromSeconds(_currentConfiguration.SessionDuration));
+                _db.KeyExpire(_currentConfiguration.Prefix + sessionId.ToString(), TimeSpan.FromSeconds(_currentConfiguration.SessionDuration));
 
             var encryptedSessionId = cryptographyConfiguration.EncryptionProvider.Encrypt(sessionId.ToString());
             var hmacBytes = cryptographyConfiguration.HmacProvider.GenerateHmac(sessionId.ToString());
@@ -230,7 +230,7 @@ namespace Nancy.Session
                 var hmacValid = HmacComparer.Compare(newHmac, hmacBytes, hmacProvider.HmacLength);
 
                 // Get the value from Redis
-                string encryptedData = _db.StringGet(sessionId.ToString(CultureInfo.InvariantCulture));
+                string encryptedData = _db.StringGet(_currentConfiguration.Prefix + sessionId.ToString(CultureInfo.InvariantCulture));
 
                 if (encryptedData != null)
                 {

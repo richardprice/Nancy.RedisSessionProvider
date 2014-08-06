@@ -1,4 +1,6 @@
-﻿namespace Nancy.Session
+﻿using System;
+
+namespace Nancy.Session
 {
     using Cryptography;
 
@@ -11,6 +13,7 @@
         internal const string DefaultConnectionString = "localhost:6379";
         internal const int DefaultSessionDuration = 2592000; // 30 days
         internal const bool DefaultEnableSlidingSessions = true;
+        internal const string DefaultPrefix = "";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedisBasedSessionsConfiguration"/> class.
@@ -30,6 +33,7 @@
             ConnectionString = DefaultConnectionString;
             SessionDuration = DefaultSessionDuration;
             EnableSlidingSessions = DefaultEnableSlidingSessions;
+            Prefix = DefaultPrefix;
         }
 
         /// <summary>
@@ -71,6 +75,12 @@
         /// Enables extending the session duration per access
         /// </summary>
         public bool EnableSlidingSessions { get; set; }
+
+        /// <summary>
+        /// Adds a prefix to the storage key
+        /// </summary>
+        public string Prefix { get; set; }
+
 
         /// <summary>
         /// Gets a value indicating whether the configuration is valid or not.
