@@ -218,7 +218,7 @@ namespace Nancy.Session
 
             if (request.Cookies.ContainsKey(cookieName))
             {
-                var cookieData = HttpUtility.UrlDecode(request.Cookies[cookieName]);
+                var cookieData = request.Cookies[cookieName];
                 var hmacLength = Base64Helpers.GetBase64Length(hmacProvider.HmacLength);
                 var hmacString = cookieData.Substring(0, hmacLength);
                 var encryptedSessionId = cookieData.Substring(hmacLength);
